@@ -22,10 +22,9 @@ module.exports = function() {
 	};
 
 	var promise = {
-		resolve: function(err, results) {
+		resolve: function(results) {
 			if (_done) return;
 
-			_err = err;
 			_results = results;
 			_done = true;
 
@@ -47,11 +46,11 @@ module.exports = function() {
 				throw "callback is not a function";
 			}
 
-			if (this.done) {
+			if (_done) {
 				cb(_err, _results);
 			}
 			else {
-				this.cbs.push(cb);
+				_cbs.push(cb);
 			}
 
 			return this;
