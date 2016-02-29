@@ -1,39 +1,56 @@
 'use strict';
 
-// Adapted from: https://github.com/mostlygeek/Node-Simple-Cache
+/**
+ * A *very* simple promise
+ *
+ * Adapted from: https://github.com/mostlygeek/Node-Simple-Cache
+ */
 module.exports = function() {
-	/** 
-	 * A *very* simple promise 
-	 */
+	var _results = null;
+	var _err = null;
+	var _done = false;
+	// callbacks
+	var _cbs = [];
+
+	var emptyStack = function() {
+		if (!_done) return;
+
+		var cb;
+		while (cb = _cbs.shift()) {
+			cb.call(this, _err, _results);
+		}
+	};
+
 	var promise = {
-		results: null,
-		done: false,
-		cbs: [], // callbacks
-		resolve: function(results) {
-			if (this.done) {
-				return; // a bit of safety :)
-			}
+		resolve: function(err, results) {
+			if (_done) return;
 
-			var cb;
-			while (cb = this.cbs.shift()) {
-				cb.call(this, results);
-			}
+			_err = err;
+			_results = results;
+			_done = true;
 
-			this.results = results;
-			this.done = true;
+			emptyStack();
+		},
+		reject: function(err) {
+			if (_done) return;
 
+			_err = err;
+			_done = true;
+
+			emptyStack();
 		},
 		/**
 		 * What to do when the promise has been fulfilled
 		 */
-		fulfilled: function(cb) {
+		done: function(cb) {
 			if (typeof(cb) !== "function") {
 				throw "callback is not a function";
 			}
 
 			if (this.done) {
-				cb(this.results);
-			} else {
+				cb(_err, _results);
+			}
+			else {
 				this.cbs.push(cb);
 			}
 
