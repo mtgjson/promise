@@ -30,14 +30,14 @@ function promise() {
 
 		_results = results;
 
-		emptyStack();
+		setImmediate(emptyStack);
 	};
 	this.reject = function(err) {
 		if (_done) return;
 
 		_err = err;
 
-		emptyStack();
+		setImmediate(emptyStack);
 	};
 	/**
 	 * What to do when the promise has been fulfilled
@@ -47,7 +47,7 @@ function promise() {
 			throw "callback is not a function";
 
 		if (_done)
-			cb(_err, _results);
+			setImmediate(function() { cb(_err, _results); });
 		else
 			_cbs.push(cb);
 
