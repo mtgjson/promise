@@ -17,7 +17,7 @@ function promise() {
 
 	// Calls all callbacks on the list when we're done.
 	var emptyStack = function() {
-		if (!_done) return;
+		_done = true;
 
 		var cb;
 		while (cb = _cbs.shift()) {
@@ -29,7 +29,6 @@ function promise() {
 		if (_done) return;
 
 		_results = results;
-		_done = true;
 
 		emptyStack();
 	};
@@ -37,7 +36,6 @@ function promise() {
 		if (_done) return;
 
 		_err = err;
-		_done = true;
 
 		emptyStack();
 	};
@@ -45,16 +43,13 @@ function promise() {
 	 * What to do when the promise has been fulfilled
 	 */
 	this.done = function(cb) {
-		if (typeof(cb) !== "function") {
+		if (typeof(cb) !== "function")
 			throw "callback is not a function";
-		}
 
-		if (_done) {
+		if (_done)
 			cb(_err, _results);
-		}
-		else {
+		else
 			_cbs.push(cb);
-		}
 
 		return this;
 	};
