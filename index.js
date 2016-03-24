@@ -4,14 +4,18 @@
  * A *very* simple promise
  *
  * Adapted from: https://github.com/mostlygeek/Node-Simple-Cache
+ *
+ * Once the promise is fulfilled or rejected, the "done" function will be called with the following parameters
+ * done(err, results);
  */
-module.exports = function() {
+function promise() {
 	var _results = null;
 	var _err = null;
 	var _done = false;
 	// callbacks
 	var _cbs = [];
 
+	// Calls all callbacks on the list when we're done.
 	var emptyStack = function() {
 		if (!_done) return;
 
@@ -21,41 +25,39 @@ module.exports = function() {
 		}
 	};
 
-	var promise = {
-		resolve: function(results) {
-			if (_done) return;
+	this.resolve = function(results) {
+		if (_done) return;
 
-			_results = results;
-			_done = true;
+		_results = results;
+		_done = true;
 
-			emptyStack();
-		},
-		reject: function(err) {
-			if (_done) return;
-
-			_err = err;
-			_done = true;
-
-			emptyStack();
-		},
-		/**
-		 * What to do when the promise has been fulfilled
-		 */
-		done: function(cb) {
-			if (typeof(cb) !== "function") {
-				throw "callback is not a function";
-			}
-
-			if (_done) {
-				cb(_err, _results);
-			}
-			else {
-				_cbs.push(cb);
-			}
-
-			return this;
-		}
+		emptyStack();
 	};
+	this.reject = function(err) {
+		if (_done) return;
 
-	return(promise);
+		_err = err;
+		_done = true;
+
+		emptyStack();
+	};
+	/**
+	 * What to do when the promise has been fulfilled
+	 */
+	this.done = function(cb) {
+		if (typeof(cb) !== "function") {
+			throw "callback is not a function";
+		}
+
+		if (_done) {
+			cb(_err, _results);
+		}
+		else {
+			_cbs.push(cb);
+		}
+
+		return this;
+	};
 };
+
+module.exports = promise;
