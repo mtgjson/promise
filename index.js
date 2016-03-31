@@ -7,6 +7,8 @@
  *
  * Once the promise is fulfilled or rejected, the "done" function will be called with the following parameters
  * done(err, results);
+ *
+ * You can pass other promises to "done" and they will get resolved/rejected according to the original promise.
  */
 function promise() {
 	var _results = null;
@@ -14,6 +16,8 @@ function promise() {
 	var _done = false;
 	// callbacks
 	var _cbs = [];
+	// promises
+	var _promises = [];
 
 	// Calls all callbacks on the list when we're done.
 	var emptyStack = function() {
@@ -22,6 +26,11 @@ function promise() {
 		var cb;
 		while (cb = _cbs.shift()) {
 			cb.call(this, _err, _results);
+		}
+
+		while (cb = _promises.shift()) {
+			if (_err) cb.reject(_err, _results);
+			else cb.resolve(_results);
 		}
 	};
 
@@ -32,22 +41,34 @@ function promise() {
 
 		setImmediate(emptyStack);
 	};
-	this.reject = function(err) {
+	this.reject = function(err, results) {
 		if (_done) return;
 
 		_err = err;
+		_results = results;
 
 		setImmediate(emptyStack);
 	};
+
 	/**
 	 * What to do when the promise has been fulfilled
 	 */
 	this.done = function(cb) {
+		if (cb instanceof promise) {
+			if (_done) {
+				if (_err) cb.reject(_err, _results);
+				else cb.resolve(_results);
+			}
+			else
+				_promises.push(cb);
+
+			return(this);
+		}
 		if (typeof(cb) !== "function")
 			throw "callback is not a function";
 
 		if (_done)
-			setImmediate(function() { cb(_err, _results); });
+			setImmediate(cb, _err, _results);
 		else
 			_cbs.push(cb);
 
