@@ -1,7 +1,7 @@
 promise
 ======
 
-Simple promise library created for (mtgjson)[http://mtgjson.com]
+Simple promise library created for [mtgjson](http://mtgjson.com)
 
 author
 -----
